@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-
+import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient/supabaseClient";
+import './producto.css'
 export default function Productos() {
   const [categorias, setCategorias] = useState([]);
   const [competencias, setCompetencias] = useState([]);
@@ -12,11 +14,41 @@ export default function Productos() {
     categoria: "",
     competencia: "",
     equipo: "",
-    marca: ""
+    marca: "",
+    nombre: "" 
   });
 
+  const navigate = useNavigate();
+  const agregarAlCarrito = async (id_producto) => {
+  const id_cliente = localStorage.getItem("id_usuario");
+
+  if (!id_cliente) {
+    navigate("/login-user");
+    return;
+  }
+
+  try {
+    const res = await fetch(`${process.env.REACT_APP_API_URL}/carrito/agregar`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id_cliente,
+        id_producto,
+        cantidad: 1
+      })
+    });
+
+    const data = await res.json();
+    alert(data.mensaje);
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+
+
   useEffect(() => {
-    fetch("http://localhost:3001/listas")
+    console.log("API URL:", process.env.REACT_APP_API_URL);
+    fetch(`${process.env.REACT_APP_API_URL}/listas`)
       .then(res => res.json())
       .then(data => {
         setCategorias(data.categorias);
@@ -29,16 +61,23 @@ export default function Productos() {
   const buscarProductos = () => {
     const query = new URLSearchParams(filtros).toString();
 
-    fetch(`http://localhost:3001/productos?${query}`)
+    fetch(`${process.env.REACT_APP_API_URL}/productos?${query}`)
       .then(res => res.json())
       .then(data => setProductos(data));
   };
+  function obtenerUrlImagen(path) {
+  if (!path) return "/fallback-image.png";
 
+  const { data } = supabase.storage
+    .from("productos") // nombre de tu bucket
+    .getPublicUrl(path);
+
+  return data.publicUrl;
+}
   return (
-    <div style={{ padding: "30px" }}>
+    <div className="campo-Productos">
       <h1>Productos</h1>
-
-      <div style={{ display: "flex", gap: "10px", marginBottom: "20px" }}>
+      <div className = "opcion-producto">
         <select onChange={(e) => setFiltros({...filtros, categoria: e.target.value})}>
           <option value="">Categoría</option>
           {categorias.map(c => (
@@ -67,10 +106,22 @@ export default function Productos() {
           ))}
         </select>
 
+        <input
+          placeholder="Buscar por nombre..."
+          value={filtros.nombre}
+          onChange={(e) => {
+            setFiltros({ ...filtros, nombre: e.target.value });
+            buscarProductos(); 
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") buscarProductos(); 
+          }}
+        />
+
         <button onClick={buscarProductos}>Buscar</button>
       </div>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "30px", marginTop:"30px", justifyContent:"center" }}>
         {productos.map(p => (
           <div key={p.id_producto} 
             style={{
@@ -79,19 +130,25 @@ export default function Productos() {
               border: "1px solid #ddd",
               borderRadius: "10px"
             }}>
-            <img src={p.imagen} alt="" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
+            <img src={obtenerUrlImagen(p.imagen)} alt="" style={{ width: "100%", height: "150px", objectFit: "cover" }} />
             <h3>{p.nombre_producto}</h3>
             <p>Precio: S/. {p.precio}</p>
             <p>Categoría: {p.categoria}</p>
             <p>Competencia: {p.competencia}</p>
 
-            {}
-            <button 
-              style={{ marginTop: "10px", width: "100%", padding: "8px", cursor: "pointer" }}
-              onClick={() => console.log("Agregar al carrito", p.id_producto)}
+            <button onClick={() => navigate(`/producto/${p.id_producto}`)} style={{ marginLeft: "18px", marginTop: "10px", width: "80%", padding: "8px", backgroundColor: "yellow", color: "black",  }}>
+              Más detalles
+            </button>
+
+            <div className="btn-prod">
+            <button
+              onClick={() => agregarAlCarrito(p.id_producto)}
             >
               Agregar al carrito
             </button>
+            </div>
+            
+
           </div>
         ))}
       </div>

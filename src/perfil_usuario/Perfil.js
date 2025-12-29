@@ -1,7 +1,10 @@
 import React, { useEffect, useState } from "react";
-
+import { useNavigate } from "react-router-dom";
+ import './perfil.css';
 const Profile = () => {
-  const id_cliente =  localStorage.getItem("id_usuario");;
+  const navigate = useNavigate();
+
+  const id_cliente =  localStorage.getItem("id_usuario");
   console.log("id:",id_cliente);
   const [usuario, setUsuario] = useState(null);
   const [direcciones, setDirecciones] = useState([]);
@@ -22,7 +25,7 @@ const Profile = () => {
 
  
   useEffect(() => {
-    fetch(`http://localhost:3001/profile?id_cliente=${id_cliente}`)
+    fetch(`${process.env.REACT_APP_API_URL}/profile?id_cliente=${id_cliente}`)
       .then((res) => res.json())
       .then((data) => {
         setUsuario(data);
@@ -31,30 +34,27 @@ const Profile = () => {
 
 
   const cargarDirecciones = () => {
-    fetch(`http://localhost:3001/direccion?id_cliente=${id_cliente}`)
+     fetch(`${process.env.REACT_APP_API_URL}/direccion?id_cliente=${id_cliente}`)
       .then((res) => res.json())
       .then((data) => {
-        console.log("DIRECCIONES RECIBIDAS:", data); // ← ESTE LOG AQUI
+        console.log("DIRECCIONES RECIBIDAS:", data); //
         setDirecciones(data);
         setMostrarDirecciones(true);
       });
   };
 
-
   const cargarPaises = () => {
-    fetch("http://localhost:3001/paises")
+    fetch(`${process.env.REACT_APP_API_URL}/paises`)
       .then((res) => res.json())
       .then((data) => setPaises(data));
   };
 
-
   const cargarCiudades = (id_pais) => {
-    fetch(`http://localhost:3001/ciudades?id_pais=${id_pais}`)
+    fetch(`${process.env.REACT_APP_API_URL}/ciudades?id_pais=${id_pais}`)
       .then((res) => res.json())
       .then((data) => setCiudades(data));
   };
 
- 
   const cambiarValor = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -64,7 +64,6 @@ const Profile = () => {
     }
   };
 
-
   const agregarDireccion = (e) => {
     e.preventDefault();
 
@@ -73,7 +72,7 @@ const Profile = () => {
       id_cliente
     };
 
-    fetch("http://localhost:3001/direccionAgregar", {
+    fetch(`${process.env.REACT_APP_API_URL}/direccionAgregar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body)
@@ -89,26 +88,42 @@ const Profile = () => {
   if (!usuario) return <p>Cargando perfil...</p>;
 
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>Perfil del Usuario</h2>
+    <div style={{ 
+        backgroundImage: "url('/perfil/perfil.jpg')", 
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        minHeight: "100vh",
+        width: "100%",
+        overflow: "hidden"
+        }} >
+          <div className = "cuadro-perfil">
+            <h2>Perfil del Usuario</h2>
 
-      <p><strong>Nombre:</strong> {usuario.nombre}</p>
-      <p><strong>Apellidos:</strong> {usuario.apellido_paterno} {usuario.apellido_materno}</p>
-      <p><strong>Correo:</strong> {usuario.correo_electronico}</p>
-      <p><strong>Teléfono:</strong> {usuario.telefono}</p>
-      <p><strong>DNI:</strong> {usuario.dni}</p>
-      <p><strong>Saldo:</strong> {usuario.saldo}</p>
+              <p><strong>Nombre:</strong> {usuario.nombre}</p>
+              <p><strong>Apellido paterno:</strong> {usuario.apellido_paterno} </p>
+              <p><strong>Apellido materno:</strong> {usuario.apellido_materno}</p>
+              <p><strong>Correo:</strong> {usuario.correo_electronico}</p>
+              <p><strong>Teléfono:</strong> {usuario.telefono}</p>
+              <p><strong>DNI:</strong> {usuario.dni}</p>
+              <p><strong>Saldo:</strong> {usuario.saldo}</p>
 
-      <hr />
+              <hr />
+              <div className="abajo-perfil">
+                  <button onClick={cargarDirecciones}>Ver direcciones</button>
 
-      <button onClick={cargarDirecciones}>Ver direcciones</button>
+                  <button onClick={() => { setMostrarAgregar(true); cargarPaises(); }}>
+                  Agregar dirección
+                  </button>
+                  <button onClick={() => navigate("/deudas")}>
+                  Ver Deudas
+                  </button>
+              </div>
+          </div>
 
-      <button onClick={() => { setMostrarAgregar(true); cargarPaises(); }}>
-        Agregar dirección
-      </button>
 
       {mostrarDirecciones && (
-        <div style={{ marginTop: "20px" }}>
+        <div className="direccion">
           <h3>Mis direcciones</h3>
 
           {direcciones.length === 0 ? (
@@ -126,7 +141,7 @@ const Profile = () => {
       )}
 
       {mostrarAgregar && (
-        <div style={{ marginTop: "20px" }}>
+        <div className="AgregarDireccion">
           <h3>Agregar nueva dirección</h3>
 
           <form onSubmit={agregarDireccion}>
@@ -165,8 +180,7 @@ const Profile = () => {
               onChange={cambiarValor}
               required
             /><br/>
-
-
+            <div className ="opcion-dire"> 
             <select name="id_pais" value={form.id_pais} onChange={cambiarValor} required>
               <option value="">Seleccione un país</option>
               {paises.map((p) => (
@@ -185,7 +199,7 @@ const Profile = () => {
                 </option>
               ))}
             </select><br/>
-
+            </div>
             <button type="submit">Guardar</button>
           </form>
         </div>

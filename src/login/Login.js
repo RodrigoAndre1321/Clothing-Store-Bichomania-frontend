@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import './login.css'
 export default function Login({ tipo }) {
   const [datos, setDatos] = useState({ correo: "", password: "" });
   const navigate = useNavigate();
-
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const actualizar = (e) => {
     setDatos({ ...datos, [e.target.name]: e.target.value });
   };
@@ -14,8 +14,8 @@ export default function Login({ tipo }) {
 
     const url =
       tipo === "user"
-        ? "http://localhost:3001/login/user"
-        : "http://localhost:3001/login/employee";
+        ? `${process.env.REACT_APP_API_URL}/login/user`
+        : `${process.env.REACT_APP_API_URL}/login/employee`;
 
     try {
       const res = await fetch(url, {
@@ -40,10 +40,10 @@ export default function Login({ tipo }) {
         localStorage.setItem("id_usuario", msg.usuario.id);
       } else {
         localStorage.setItem("rol", msg.empleado.rol);
-        localStorage.setItem("id_usuario", msg.empleado.id);
+        localStorage.setItem("id_empleado", msg.empleado.id);
       }
 
-      alert(msg.message || "Login exitoso");
+      window.dispatchEvent(new Event("storage"));
 
       if (tipo === "user") {
         navigate("/productos", { replace: true });
@@ -58,29 +58,59 @@ export default function Login({ tipo }) {
   };
 
   return (
-    <div>
-      <h2>Login {tipo === "user" ? "Cliente" : "Empleado"}</h2>
-      <form onSubmit={enviarLogin}>
-        <input
-          type="text"
-          name="correo"
-          placeholder="Correo"
-          value={datos.correo}
-          onChange={actualizar}
-        />
-        <input
-          type="password"
-          name="password"
-          placeholder="Contraseña"
-          value={datos.password}
-          onChange={actualizar}
-        />
-        <button type="submit">Ingresar</button>
-      </form>
-
-      {tipo === "user" && (
-        <button onClick={() => navigate("/registro")}>Registrate</button>
-      )}
+    <div className = "content-login"  style={{ 
+        backgroundImage: "url('/login/login1.jpg')", 
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundSize: "cover",
+        minHeight: "100vh",
+        width: "100%"
+        }}>
+      <div className = 'cuadro-login'>
+        <h2 style ={{}}>Datos del {tipo === "user" ? "Cliente" : "Empleado"}</h2>
+          <form onSubmit={enviarLogin}>
+            <input
+              type="text"
+              name="correo"
+              placeholder="*Email adress/ Name account"
+              value={datos.correo}
+              onChange={actualizar}
+            />
+            <div className="input-password-container">
+            <input
+              type={mostrarPassword ? "text" : "password"} // 👈 alterna entre text/password
+              name="password"
+              placeholder="Password"
+              value={datos.password}
+              onChange={actualizar}
+            />
+            <span
+              onClick={() => setMostrarPassword(!mostrarPassword)}
+              style={{
+                position: "absolute",
+                right: "10px",
+                top: "50%",
+                transform: "translateY(-50%)",
+                cursor: "pointer",
+                fontSize: "18px",
+              }}
+            >
+              {mostrarPassword ? "🙈" : "👁️"}
+            </span>
+          </div>
+            <button type="submit">Ingresar</button>
+          </form>
+          <div className="regi">
+            {tipo === "user" && (
+              <div>
+                <span style={{ color: "darkblue", fontSize: "20px", fontFamily: "cursive", marginLeft:"86px" }}>
+                  ¿Eres nuevo?
+                </span>
+                <button onClick={() => navigate("/registro")}>Registrate</button>
+              </div>
+            )}
+          </div>
+      </div>
     </div>
   );
 }

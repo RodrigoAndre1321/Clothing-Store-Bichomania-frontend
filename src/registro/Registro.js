@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-
+import './registro.css'
 export default function Registro() {
   const [cliente, setCliente] = useState({
     correo_electronico: "",
@@ -49,7 +49,7 @@ export default function Registro() {
   const registrarCliente = (e) => {
     e.preventDefault(); // evita recargar la página
     if (!validar()) return;
-    fetch("http://localhost:3001/registrar", {
+    fetch(`${process.env.REACT_APP_API_URL}/registrar`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(cliente)
@@ -59,7 +59,7 @@ export default function Registro() {
         alert(msg.message);
         console.log("Enviado:", cliente);
         
-        navigate("/productos");
+        navigate("/login-user");
 
 
       })
@@ -70,21 +70,21 @@ export default function Registro() {
   return (
     <div
       className="fondo"
-      style={{
-        backgroundImage: "url(/registro.jpg)",
-        backgroundSize: "cover",
+      style={{ 
+        backgroundImage: "url('/registro/registro.jpg')", 
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
-        height: "100vh",
-        width: "100vw"
+        backgroundSize: "cover",
+        minHeight: "100vh",
+        width: "100%"
       }}
     >
-      <div className="cuadro">
+      <div className="cuadro-registro">
         <div className="texto">
-          <span>DATOS</span>
+          <span>DATOS: </span>
         </div>
 
-        <form className="campo1" onSubmit={registrarCliente}>
+        <form className="campo-registro" onSubmit={registrarCliente}>
           <input
             type="text"
             placeholder="*Email address"
@@ -112,7 +112,6 @@ export default function Registro() {
             required
           />
 
-          {/* Teléfono + DNI */}
           <div className="tDNI">
             <input
               type="text"
@@ -131,8 +130,6 @@ export default function Registro() {
               required
             />
           </div>
-
-          {/* fecha*/}
 
           <div className="contraseña">
 
