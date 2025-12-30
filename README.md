@@ -26,10 +26,12 @@ npm start
 Autor
 Rodrigo Ccallo
 ## Demo
-https://clothing-store-bichomania.vercel.app
+Frontend (Vercel): https://clothing-store-bichomania-frontend.vercel.app/ 
+Backend: Desplegado en Clever Cloud
 ```bash
 git add README.md
 git commit -m "Add README"
 git push
+
 
 
